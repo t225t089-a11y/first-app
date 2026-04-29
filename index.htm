@@ -1,1 +1,187 @@
+import React, { useState } from 'react';
+import { CheckCircle2, XCircle, Trophy, RefreshCw, ChevronRight } from 'lucide-react';
 
+// ここでクイズの問題をカスタマイズできます！
+const quizData = [
+  {
+    question: "日本の最も高い山はどれですか？",
+    options: ["阿蘇山", "富士山", "北岳", "槍ヶ岳"],
+    answer: "富士山",
+    explanation: "富士山は標高3,776mで、日本で最も高い山です。"
+  },
+  {
+    question: "地球から最も近い惑星はどれですか？",
+    options: ["火星", "金星", "木星", "水星"],
+    answer: "金星",
+    explanation: "地球に最も近づく惑星は金星です。"
+  },
+  {
+    question: "「吾輩は猫である」の作者は誰ですか？",
+    options: ["芥川龍之介", "太宰治", "夏目漱石", "森鴎外"],
+    answer: "夏目漱石",
+    explanation: "「吾輩は猫である」は、1905年に発表された夏目漱石のデビュー作です。"
+  },
+  {
+    question: "HTMLは何の略ですか？",
+    options: ["Hyper Text Markup Language", "High Tech Modern Language", "Hyperlink Text Making Language", "Home Tool Markup Language"],
+    answer: "Hyper Text Markup Language",
+    explanation: "HTMLはウェブページを作成するためのマークアップ言語です。"
+  },
+  {
+    question: "日本の現在の元号「令和」の前は何でしたか？",
+    options: ["昭和", "大正", "平成", "明治"],
+    answer: "平成",
+    explanation: "平成の次は令和です。1989年から2019年までが平成でした。"
+  }
+];
+
+export default function App() {
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [score, setScore] = useState(0);
+  const [showScore, setShowScore] = useState(false);
+  const [selectedOption, setSelectedOption] = useState(null);
+  const [isAnswered, setIsAnswered] = useState(false);
+
+  const handleOptionClick = (option) => {
+    if (isAnswered) return; // 既に回答済みの場合は何もしない
+
+    setSelectedOption(option);
+    setIsAnswered(true);
+
+    if (option === quizData[currentQuestion].answer) {
+      setScore(score + 1);
+    }
+  };
+
+  const handleNextQuestion = () => {
+    const nextQuestion = currentQuestion + 1;
+    if (nextQuestion < quizData.length) {
+      setCurrentQuestion(nextQuestion);
+      setSelectedOption(null);
+      setIsAnswered(false);
+    } else {
+      setShowScore(true);
+    }
+  };
+
+  const restartQuiz = () => {
+    setCurrentQuestion(0);
+    setScore(0);
+    setShowScore(false);
+    setSelectedOption(null);
+    setIsAnswered(false);
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4 font-sans text-gray-800">
+      <div className="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden">
+        {/* Header */}
+        <div className="bg-blue-600 p-6 text-white text-center">
+          <h1 className="text-2xl font-bold">シンプルクイズゲーム</h1>
+        </div>
+
+        <div className="p-6 md:p-8">
+          {showScore ? (
+            // 結果画面
+            <div className="text-center animate-fade-in">
+              <Trophy className="w-20 h-20 mx-auto text-yellow-400 mb-4" />
+              <h2 className="text-3xl font-bold mb-2">結果発表</h2>
+              <p className="text-xl mb-6 text-gray-600">
+                {quizData.length}問中 <span className="text-blue-600 font-bold text-3xl">{score}</span> 問正解！
+              </p>
+              
+              <div className="bg-gray-100 p-4 rounded-lg mb-8">
+                <p className="text-lg">
+                  {score === quizData.length ? "全問正解！素晴らしい！🎉" :
+                   score >= quizData.length / 2 ? "よくできました！👍" :
+                   "もう少し頑張りましょう！💪"}
+                </p>
+              </div>
+
+              <button
+                onClick={restartQuiz}
+                className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-xl transition duration-200"
+              >
+                <RefreshCw className="w-5 h-5" />
+                もう一度プレイする
+              </button>
+            </div>
+          ) : (
+            // クイズ画面
+            <div className="animate-fade-in">
+              <div className="flex justify-between items-center mb-6">
+                <span className="text-sm font-semibold text-blue-600 bg-blue-100 py-1 px-3 rounded-full">
+                  問題 {currentQuestion + 1} / {quizData.length}
+                </span>
+                <span className="text-sm text-gray-500 font-medium">
+                  スコア: {score}
+                </span>
+              </div>
+
+              <h2 className="text-xl md:text-2xl font-bold mb-8 leading-relaxed">
+                {quizData[currentQuestion].question}
+              </h2>
+
+              <div className="space-y-3">
+                {quizData[currentQuestion].options.map((option, index) => {
+                  let buttonClass = "w-full text-left p-4 rounded-xl border-2 transition-all duration-200 font-medium text-lg ";
+                  
+                  if (!isAnswered) {
+                    buttonClass += "border-gray-200 hover:border-blue-400 hover:bg-blue-50 text-gray-700";
+                  } else {
+                    if (option === quizData[currentQuestion].answer) {
+                      buttonClass += "border-green-500 bg-green-50 text-green-700"; // 正解の選択肢
+                    } else if (option === selectedOption) {
+                      buttonClass += "border-red-500 bg-red-50 text-red-700"; // 選んだ間違った選択肢
+                    } else {
+                      buttonClass += "border-gray-200 opacity-50 text-gray-500"; // その他の選択肢
+                    }
+                  }
+
+                  return (
+                    <button
+                      key={index}
+                      onClick={() => handleOptionClick(option)}
+                      disabled={isAnswered}
+                      className={buttonClass}
+                    >
+                      <div className="flex items-center justify-between">
+                        <span>{option}</span>
+                        {isAnswered && option === quizData[currentQuestion].answer && (
+                          <CheckCircle2 className="w-6 h-6 text-green-500" />
+                        )}
+                        {isAnswered && option === selectedOption && option !== quizData[currentQuestion].answer && (
+                          <XCircle className="w-6 h-6 text-red-500" />
+                        )}
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* 解説と次へボタン */}
+              {isAnswered && (
+                <div className="mt-8 animate-fade-in">
+                  <div className={`p-4 rounded-lg mb-6 ${selectedOption === quizData[currentQuestion].answer ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                    <p className="font-bold mb-1">
+                      {selectedOption === quizData[currentQuestion].answer ? '正解！' : '残念！'}
+                    </p>
+                    <p className="text-sm">{quizData[currentQuestion].explanation}</p>
+                  </div>
+                  
+                  <button
+                    onClick={handleNextQuestion}
+                    className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 px-6 rounded-xl transition duration-200 shadow-md"
+                  >
+                    {currentQuestion === quizData.length - 1 ? '結果を見る' : '次の問題へ'}
+                    <ChevronRight className="w-5 h-5" />
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
